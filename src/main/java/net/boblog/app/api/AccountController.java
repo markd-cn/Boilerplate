@@ -6,14 +6,16 @@ import net.boblog.app.external.JsonMessage;
 import net.boblog.app.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import springfox.documentation.annotations.ApiIgnore;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.util.regex.Pattern;
 
@@ -24,11 +26,13 @@ import java.util.regex.Pattern;
 @RequestMapping("api/account")
 public class AccountController {
     @Autowired AccountService accountService;
+    @Autowired SessionAuthenticationStrategy sessionAuthenticationStrategy;
 
     @ApiOperation(value = "用户登录", position = 0)
     @RequestMapping(value = "login", method = RequestMethod.POST)
-    public JsonMessage<Account> login(@RequestParam("username") String username,
-             @RequestParam("password") String password) {
+    public JsonMessage<Account> login(HttpServletRequest request, HttpServletResponse response,
+            @RequestParam("username") String username,
+            @RequestParam("password") String password) {
         Account account;
         if (Pattern.matches("\\d{11}", username)) {
             account = accountService.findByPhone(username);
@@ -43,8 +47,10 @@ public class AccountController {
         } else if (!Account.encryptPassword(password).equals(account.getEncryptPassword())) {
             return new JsonMessage<>(false, "WRONG_PASSWORD", "密码错误");
         } else {
-            Authentication auth = new UsernamePasswordAuthenticationToken(account, null, null);
+            UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(account.getUsername(), null, null);
+            auth.setDetails(account);
             SecurityContextHolder.getContext().setAuthentication(auth);
+            sessionAuthenticationStrategy.onAuthentication(auth, request, response);
             return new JsonMessage<>(true, "", "", account);
         }
     }
@@ -78,8 +84,8 @@ public class AccountController {
     @ApiOperation(value = "获取帐户信息", position = 3)
     @RequestMapping(method = RequestMethod.GET)
     public JsonMessage<Account> logout() {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Account account = Account.class.isInstance(principal) ? (Account) principal : null;
+        Object details = SecurityContextHolder.getContext().getAuthentication().getDetails();
+        Account account = Account.class.isInstance(details) ? (Account) details : null;
         return new JsonMessage<>(true, "", "", account);
     }
 }

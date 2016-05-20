@@ -38,6 +38,7 @@ public class Account implements Serializable {
 
     public Account() {
         this.createAt = new Date();
+        this.role = "USER";
     }
 
     public static String encryptPassword(String password) {

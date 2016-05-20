@@ -28,6 +28,9 @@ public class RedisSessionAuthenticationStrategy implements SessionAuthentication
         Map<String, ? extends ExpiringSession> sessions = sessionRepository.findByIndexNameAndIndexValue(
                 FindByIndexNameSessionRepository.PRINCIPAL_NAME_INDEX_NAME,
                 authentication.getPrincipal().toString());
-        if (sessions.size() > 1) throw new SessionAuthenticationException("你已登录,请不要重复登录");
+        if (sessions.size() > 1) {
+            ExpiringSession session = sessions.values().stream().min((a, b) -> (int)(a.getLastAccessedTime() - b.getLastAccessedTime())).get();
+            sessionRepository.delete(session.getId());
+        }
     }
 }
