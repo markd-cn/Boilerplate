@@ -1,0 +1,15 @@
+*.iml
+*.ipr
+*.iws
+*.log
+*.log.*
+
+.gradle
+.idea
+.vscode
+.DS_Store
+
+node_modules
+build
+*-dev.yml
+/gradle.properties

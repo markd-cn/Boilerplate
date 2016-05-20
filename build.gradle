@@ -1,0 +1,62 @@
+group 'net.boblog'
+version '1.0-SNAPSHOT'
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'org.springframework.boot:spring-boot-gradle-plugin:1.+'
+        classpath 'org.flywaydb:flyway-gradle-plugin:3.+'
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'checkstyle'
+apply plugin: 'spring-boot'
+apply plugin: 'org.flywaydb.flyway'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'org.springframework.boot:spring-boot-starter-web:1.+'
+    compile 'org.springframework.boot:spring-boot-starter-security:1.+'
+    compile 'org.springframework.boot:spring-boot-starter-data-jpa:1.+'
+    compile 'org.springframework.boot:spring-boot-starter-redis:1.+'
+    compile 'org.springframework.session:spring-session:1.+'
+    compile 'com.mchange:c3p0:0.9.+'
+    compile 'org.im4java:im4java:1.+'
+    compile 'javax.mail:mail:1.4.+'
+    compile 'io.springfox:springfox-swagger2:2.+'
+    compile 'io.springfox:springfox-swagger-ui:2.+'
+    testCompile 'junit:junit:4.+'
+    testCompile 'com.jayway.restassured:rest-assured:2.9.+'
+    testCompile 'com.jayway.restassured:spring-mock-mvc:2.9.+'
+    testCompile 'org.springframework.boot:spring-boot-starter-test:1.+'
+    testCompile 'org.springframework.security:spring-security-test:4.+'
+    runtime 'mysql:mysql-connector-java:5.+'
+}
+
+gradle.projectsEvaluated {
+    tasks.withType(JavaCompile) {
+        options.compilerArgs << '-Xlint:unchecked'
+        options.encoding = 'UTF-8'
+    }
+}
+
+bootRun {
+    addResources = true
+}
+
+// task配置
+checkstyle {
+    ignoreFailures = true
+}
+
+defaultTasks "build"
