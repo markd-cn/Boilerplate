@@ -7,7 +7,6 @@ import net.boblog.app.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -26,7 +25,6 @@ import java.util.regex.Pattern;
 @RequestMapping("api/account")
 public class AccountController {
     @Autowired AccountService accountService;
-    @Autowired SessionAuthenticationStrategy sessionAuthenticationStrategy;
 
     @ApiOperation(value = "用户登录", position = 0)
     @RequestMapping(value = "login", method = RequestMethod.POST)
@@ -50,7 +48,6 @@ public class AccountController {
             UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(account.getUsername(), null, null);
             auth.setDetails(account);
             SecurityContextHolder.getContext().setAuthentication(auth);
-            sessionAuthenticationStrategy.onAuthentication(auth, request, response);
             return new JsonMessage<>(true, "", "", account);
         }
     }

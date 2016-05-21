@@ -6,6 +6,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.security.web.authentication.session.CompositeSessionAuthenticationStrategy;
+import org.springframework.security.web.authentication.session.SessionFixationProtectionStrategy;
+import org.springframework.security.web.session.HttpSessionEventPublisher;
 import org.springframework.session.config.annotation.web.http.EnableSpringHttpSession;
 import org.springframework.session.data.redis.RedisOperationsSessionRepository;
 import org.springframework.session.data.redis.config.annotation.web.http.EnableRedisHttpSession;
@@ -15,7 +17,7 @@ import org.springframework.session.web.http.DefaultCookieSerializer;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisShardInfo;
 
-import java.util.Collections;
+import java.util.Arrays;
 
 /**
  * Created by dave on 16/5/16.
@@ -34,13 +36,19 @@ public class HttpSessionConfig extends AbstractHttpSessionApplicationInitializer
     }
 
     @Bean
+    public HttpSessionEventPublisher httpSessionEventPublisher() {
+        return new HttpSessionEventPublisher();
+    }
+
+    @Bean
     public RedisSessionAuthenticationStrategy getStrategy(RedisOperationsSessionRepository sessionRepository) {
         return new RedisSessionAuthenticationStrategy(sessionRepository);
     }
 
     @Bean
     public CompositeSessionAuthenticationStrategy sessionAuthenticationStrategy(RedisSessionAuthenticationStrategy strategy) {
-        CompositeSessionAuthenticationStrategy composite = new CompositeSessionAuthenticationStrategy(Collections.singletonList(strategy));
+        CompositeSessionAuthenticationStrategy composite = new CompositeSessionAuthenticationStrategy(
+                Arrays.asList(strategy, new SessionFixationProtectionStrategy()));
         return composite;
     }
 
